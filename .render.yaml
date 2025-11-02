@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: skylineimex-dashboard
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    preDeployCommand: playwright install-deps chromium && playwright install chromium
+    envVars:
+      TRADE_USER: kalimacompany01@gmail.com
+      TRADE_PASS: Kalima01
