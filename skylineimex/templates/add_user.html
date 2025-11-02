@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head><title>Tạo khách - Skyline Imex</title></head>
+<body style="font-family:Arial; padding:50px;">
+  <h2>TẠO TÀI KHOẢN KHÁCH</h2>
+  <form method="post">
+    Email: <input name="email" required><br><br>
+    Mật khẩu: <input name="password" type="password" required><br><br>
+    Tên: <input name="name" required><br><br>
+    Quota: <input name="quota" value="50"><br><br>
+    <button style="padding:10px; background:#28a745; color:white; border:none;">TẠO NGAY</button>
+  </form>
+  <a href="/">Quay lại</a>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}<p style="color:green;">{{ messages[0] }}</p>{% endif %}
+  {% endwith %}
+</body>
+</html>

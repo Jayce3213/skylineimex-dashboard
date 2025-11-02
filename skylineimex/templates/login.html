@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Đăng nhập - Skyline Imex</title>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+    .box { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 360px; }
+    input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; }
+    button { width: 100%; padding: 12px; background: #1e3c72; color: white; border: none; border-radius: 6px; font-weight: bold; }
+    .logo { text-align: center; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <div class="logo">
+      <h2>SKYLINE IMEX</h2>
+    </div>
+    <form method="post">
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="password" name="password" placeholder="Mật khẩu" required>
+      <button>ĐĂNG NHẬP</button>
+    </form>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}<p style="color:red; text-align:center;">{{ messages[0] }}</p>{% endif %}
+    {% endwith %}
+  </div>
+</body>
+</html>

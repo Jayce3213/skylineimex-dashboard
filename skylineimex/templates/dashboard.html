@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard - Skyline Imex</title>
+  <style>
+    body { font-family: Arial; background: #f8f9fa; margin: 0; padding: 20px; }
+    .card { background: white; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    th { background: #1e3c72; color: white; }
+    input, button { padding: 10px; margin: 5px; }
+    .btn { background: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>TRA CỨU XNK - {{ current_user.name }} (Còn {{ current_user.quota }} lượt)</h2>
+    <a href="/logout" style="float:right; color:red;">Đăng xuất</a>
+    {% if current_user.email == 'admin@skylineimex.com' %}
+    <a href="/add-user" class="btn">+ Tạo khách</a>
+    {% endif %}
+    <hr>
+    <input type="text" id="q" placeholder="HS / Buyer / Product">
+    <button onclick="search()" class="btn">Tìm kiếm</button>
+    <button onclick="exportCSV()" class="btn">Xuất Excel</button>
+
+    <table id="table">
+      <thead><tr><th>Ngày</th><th>HS</th><th>Sản phẩm</th><th>Buyer</th><th>SL</th><th>Giá trị</th><th>Đến</th></tr></thead>
+      <tbody id="tbody"><tr><td colspan="7">Nhấn Tìm kiếm để xem dữ liệu</td></tr></tbody>
+    </table>
+  </div>
+
+  <script>
+    let data = [];
+    async function search() {
+      const q = document.getElementById('q').value;
+      const res = await fetch(`/api/search?q=${q}`);
+      data = await res.json();
+      render();
+    }
+    function render() {
+      const tbody = document.getElementById('tbody');
+      tbody.innerHTML = data.map(r => `<tr>
+        <td>${r.date}</td>
+        <td>${r.hs_code}</td>
+        <td>${r.product}</td>
+        <td>${r.buyer}</td>
+        <td>${r.quantity}</td>
+        <td>$${r.amount.toLocaleString()}</td>
+        <td>${r.purpose_country}</td>
+      </tr>`).join('') || '<tr><td colspan="7">Không có dữ liệu</td></tr>';
+    }
+    function exportCSV() {
+      if (!data.length) return;
+      const csv = 'Ngày,HS,Sản phẩm,Buyer,SL,Giá trị,Đến\n' + data.map(r => `${r.date},${r.hs_code},${r.product},${r.buyer},${r.quantity},${r.amount},${r.purpose_country}`).join('\n');
+      const a = document.createElement('a');
+      a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+      a.download = 'xnk_data.csv';
+      a.click();
+    }
+  </script>
+</body>
+</html>
