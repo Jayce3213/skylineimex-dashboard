@@ -128,7 +128,10 @@ def search():
     users[current_user.id]["quota"] -= 1
     
     return {"data": data, "total": len(data)}
-
+@app.route('/search')
+@login_required
+def search_page():
+    return render_template('search.html', user=current_user)
 # === Chạy app ===
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
