@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Tra cứu XNK - SkylineIMEX</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand" href="/">SkylineIMEX</a>
+      <div class="navbar-nav ms-auto">
+        <span class="navbar-text me-3">Xin chào, {{ user.name }}!</span>
+        <a class="nav-link" href="/logout">Đăng xuất</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-4">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header bg-success text-white">
+            <h4>🔍 Tra cứu dữ liệu xuất nhập khẩu</h4>
+          </div>
+          <div class="card-body">
+            <form id="searchForm">
+              <div class="row">
+                <div class="col-md-4">
+                  <label>HS Code / Từ khóa</label>
+                  <input type="text" class="form-control" id="query" placeholder="VD: 0901, cà phê, buyer name">
+                </div>
+                <div class="col-md-3">
+                  <label>Ngày từ</label>
+                  <input type="date" class="form-control" id="fromDate" value="2024-01-01">
+                </div>
+                <div class="col-md-3">
+                  <label>Ngày đến</label>
+                  <input type="date" class="form-control" id="toDate" value="2024-12-31">
+                </div>
+                <div class="col-md-2">
+                  <label>&nbsp;</label>
+                  <button type="button" class="btn btn-primary w-100" onclick="performSearch()">Tìm kiếm</button>
+                </div>
+              </div>
+            </form>
+
+            <hr>
+
+            <div id="results">
+              <p class="text-center text-muted">Nhập từ khóa và nhấn "Tìm kiếm" để xem dữ liệu từ TradeAtlas.</p>
+            </div>
+
+            <button class="btn btn-success mt-3" onclick="exportCSV()" id="exportBtn" disabled>Xuất Excel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let searchResults = [];
+
+    async function performSearch() {
+      const query = document.getElementById('query').value || '0901';
+      const fromDate = document.getElementById('fromDate').value;
+      const toDate = document.getElementById('toDate').value;
+
+      const btn = document.querySelector('button[onclick="performSearch()"]');
+      btn.innerHTML = 'Đang tìm...';
+      btn.disabled = true;
+
+      try {
+        const response = await fetch(`/api/search?q=${query}&from=${fromDate}&to=${toDate}`);
+        const result = await response.json();
+
+        if (result.error) {
+          document.getElementById('results').innerHTML = `<div class="alert alert-danger">Lỗi: ${result.error}</div>`;
+        } else {
+          searchResults = result.data;
+          displayResults(result.data);
+          document.getElementById('exportBtn').disabled = false;
+        }
+      } catch (error) {
+        document.getElementById('results').innerHTML = `<div class="alert alert-danger">Lỗi kết nối: ${error.message}</div>`;
+      }
+
+      btn.innerHTML = 'Tìm kiếm';
+      btn.disabled = false;
+    }
+
+    function displayResults(data) {
+      if (data.length === 0) {
+        document.getElementById('results').innerHTML = '<div class="alert alert-info">Không có dữ liệu cho từ khóa này.</div>';
+        return;
+      }
+
+      let table = `
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead class="table-dark">
+              <tr>
+                <th>Ngày</th>
+                <th>HS Code</th>
+                <th>Sản phẩm</th>
+                <th>Buyer</th>
+                <th>Supplier</th>
+                <th>Số lượng</th>
+                <th>Giá trị ($)</th>
+                <th>Quốc gia</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      data.forEach(row => {
+        table += `
+          <tr>
+            <td>${row.date || 'N/A'}</td>
+            <td>${row.hs_code}</td>
+            <td>${row.product}</td>
+            <td>${row.buyer}</td>
+            <td>${row.supplier}</td>
+            <td>${row.quantity}</td>
+            <td>${row.amount}</td>
+            <td>${row.country}</td>
+          </tr>
+        `;
+      });
+
+      table += `
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      document.getElementById('results').innerHTML = table;
+    }
+
+    function exportCSV() {
+      if (searchResults.length === 0) return;
+
+      let csv = 'Ngày,HS Code,Sản phẩm,Buyer,Supplier,Số lượng,Giá trị,Quốc gia\n';
+      searchResults.forEach(row => {
+        csv += `"${row.date || ''}","${row.hs_code}","${row.product.replace(/"/g, '""')}","${row.buyer}","${row.supplier}","${row.quantity}","${row.amount}","${row.country}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `xnk_data_${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+    }
+  </script>
+</body>
+</html>
