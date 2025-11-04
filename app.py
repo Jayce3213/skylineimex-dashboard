@@ -60,7 +60,37 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('login'))
+# === TRANG TẠO TÀI KHOẢN KHÁCH (CHỈ ADMIN) ===
+from flask import render_template, request, flash, redirect, url_for
+from werkzeug.security import generate_password_hash
 
+@app.route('/add-user', methods=['GET', 'POST'])
+@login_required
+def add_user():
+    if current_user.email != 'admin@skylineimex.com':
+        flash('Chỉ Admin mới được tạo tài khoản!', 'danger')
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        name = request.form['name']
+        quota = int(request.form['quota'])
+
+        if email in users:
+            flash('Email đã tồn tại!', 'danger')
+        else:
+            users[email] = {
+                "password": password,  # Trong thực tế: generate_password_hash(password)
+                "name": name,
+                "id": len(users) + 1,
+                "quota": quota,
+                "used": 0
+            }
+            flash(f'Tạo tài khoản {email} thành công! Quota: {quota}', 'success')
+            return redirect(url_for('add_user'))
+
+    return render_template('add_user.html', users=users)
 # === Chạy app - QUAN TRỌNG: CHO PHÉP TẤT CẢ HOST + PORT 10000 ===
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))  # Render dùng PORT từ env
