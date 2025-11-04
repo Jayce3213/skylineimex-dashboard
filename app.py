@@ -56,6 +56,7 @@ def scrape_tradeatlas(query='0901', limit=10):
             if "login" in page.url.lower():
                 browser.close()
                 return {"error": "Login failed"}
+                
             
             # Search
             search_url = f"https://www.tradeatlas.com/en/shipment-multiple?hs={query}"
